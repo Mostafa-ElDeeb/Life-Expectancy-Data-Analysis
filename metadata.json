@@ -1,0 +1,90 @@
+[
+  {
+    "column_name": "Country",
+    "description": "Name of the country where the data was recorded."
+  },
+  {
+    "column_name": "Year",
+    "description": "The calendar year of the data recording (2000-2015)."
+  },
+  {
+    "column_name": "Status",
+    "description": "Development status of the country (e.g., 'Developed' or 'Developing')."
+  },
+  {
+    "column_name": "Life expectancy",
+    "description": "TARGET VARIABLE: The average life expectancy in age (years)."
+  },
+  {
+    "column_name": "Adult Mortality",
+    "description": "Probability of dying between 15 and 60 years of age (per 1000 population)."
+  },
+  {
+    "column_name": "infant deaths",
+    "description": "Number of infant deaths per 1000 population."
+  },
+  {
+    "column_name": "Alcohol",
+    "description": "Alcohol consumption per capita for ages 15+ (in liters of pure alcohol)."
+  },
+  {
+    "column_name": "percentage expenditure",
+    "description": "Expenditure on health as a percentage of Gross Domestic Product (GDP) per capita."
+  },
+  {
+    "column_name": "Hepatitis B",
+    "description": "Hepatitis B (HepB) immunization coverage among 1-year-olds (percentage)."
+  },
+  {
+    "column_name": "Measles",
+    "description": "Number of reported measles cases per 1000 population."
+  },
+  {
+    "column_name": "BMI",
+    "description": "Average Body Mass Index of the entire population."
+  },
+  {
+    "column_name": "under-five deaths",
+    "description": "Number of deaths of children under five years old per 1000 population."
+  },
+  {
+    "column_name": "Polio",
+    "description": "Polio (Pol3) immunization coverage among 1-year-olds (percentage)."
+  },
+  {
+    "column_name": "Total expenditure",
+    "description": "General government expenditure on health as a percentage of total government expenditure."
+  },
+  {
+    "column_name": "Diphtheria",
+    "description": "Diphtheria tetanus toxoid and pertussis (DTP3) immunization coverage among 1-year-olds (percentage)."
+  },
+  {
+    "column_name": "HIV/AIDS",
+    "description": "Deaths per 1000 live births due to HIV/AIDS (0-4 years)."
+  },
+  {
+    "column_name": "GDP",
+    "description": "Gross Domestic Product per capita (in USD)."
+  },
+  {
+    "column_name": "Population",
+    "description": "Total population of the country."
+  },
+  {
+    "column_name": "thinness 1-19 years",
+    "description": "Prevalence of thinness among children and adolescents aged 10 to 19 (percentage)."
+  },
+  {
+    "column_name": "thinness 5-9 years",
+    "description": "Prevalence of thinness among children aged 5 to 9 (percentage)."
+  },
+  {
+    "column_name": "Income composition of resources",
+    "description": "Human Development Index in terms of income composition of resources (index ranging from 0 to 1)."
+  },
+  {
+    "column_name": "Schooling",
+    "description": "Average number of years of schooling."
+  }
+]
