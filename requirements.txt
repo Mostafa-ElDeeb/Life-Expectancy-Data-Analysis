@@ -1,4 +1,4 @@
 pandas
+statsmodels
 plotly
 streamlit
-statsmodels

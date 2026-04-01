@@ -14,7 +14,7 @@ life = pd.read_csv('life_expectancy_cleaned1.csv')
 # Set page navigator
 with st.sidebar:
     st.header('Pages',text_alignment='center')
-    page = st.radio('Select a Page',['Overview','Correlation Analysis','Time Series Analysis','Regional Analysis'])
+    page = st.radio('Select a Page',['Overview','Correlation Analysis','Time Series Analysis','Regional Analysis','Recommendation'])
 
 # Set filters
 # Set filter header and subheader
@@ -72,10 +72,21 @@ if page=='Overview':
 # Create tabs to distribute our insight in
     tab1,tab2=st.tabs(['Introduction','Plots'])
     with tab1:
-        st.subheader('What is Life Expectancy ?')
+        st.subheader('Life Expectancy')
         st.markdown("""Life Expectancy at Birth is the average number of years a person is expected to live. 
                     The target of our analysis is to find key factors that affect life expectancy of an individual 
                     across different regions around the world.""")
+        st.subheader('Schooling')
+        st.markdown("""Average number of years of education received by individual """)
+        st.subheader('Income Composition of Resources')
+        st.markdown("""Human Development Index (HDI).
+                    It is a fractional index (scaled from 0 to 1) that measures how effectively a country 
+                    transforms its national income into human development resources.""")
+        st.subheader('GDP')
+        st.markdown("""Gross Domestic Product. 
+                    represents the total monetary of all the finished goods and services produced 
+                    within a country's borders in a specific time period. """)
+        
     with tab2:
 # Design page layout
 # Prepare key metrics
@@ -126,7 +137,7 @@ elif page =='Correlation Analysis':
     st.subheader('Correlation Analysis')
 
 # Create tabs to distribute our insight in
-    page2_tab1,page2_tab2,page2_tab3,page2_tab4 = st.tabs(['Overall Correlations','Socioeconomic Factors','Healthcare Factors','Conclusion'])
+    page2_tab1,page2_tab2,page2_tab3,page2_tab4,page2_tab5 = st.tabs(['Overall Correlations','Socioeconomic Factors','Healthcare Factors','Nutritional Status Factotrs','Conclusion'])
 # Design page layout    
     with page2_tab1:
         page2_tab1_col1,=st.columns(1)
@@ -135,33 +146,18 @@ elif page =='Correlation Analysis':
             num_clean= life.select_dtypes(include='number')
             corr_matrix = num_clean.corr()
             strong_corr = corr_matrix[((corr_matrix>0.5) & (corr_matrix<1)) | ((corr_matrix<-0.5) & (corr_matrix>-1))]
-            st.plotly_chart(px.imshow(strong_corr.round(2), text_auto=True,width=1000, height=800,title='Moderate to Strong Correlated Factors'),use_container_width=True)
+            st.plotly_chart(px.imshow(strong_corr.round(2), text_auto=True,width=1000, height=800,color_continuous_scale='RdYlGn',
+                                      zmin=-1,zmax=1,title='Moderate to Strong Correlated Factors'),use_container_width=True)
 
 # Studying factors affecting our target column (Life Expectancy)
             life_exp_corr = num_clean['life_expectancy']
-            st.plotly_chart(px.imshow(num_clean.corrwith(life_exp_corr).sort_values(ascending=False).to_frame().round(2) , text_auto=True, width=1000, height=800, title='Correlation with Life Expectancy'),use_container_width=True)
+            st.plotly_chart(px.imshow(num_clean.corrwith(life_exp_corr).sort_values(ascending=False).to_frame().round(2) , text_auto=True, width=1000, height=800,color_continuous_scale='RdYlGn', 
+                                      zmin=-1,zmax=1,title='Correlation with Life Expectancy'),use_container_width=True)
 
         with page2_tab2:
-            page2_tab2_col1,page2_tab2_col2=st.columns(2)
-            with page2_tab2_col1:
-# Visualizing correlation between GDP and Life Expectancy segmented
-                st.plotly_chart(px.scatter(region_year_filtered_life,x='life_expectancy',y='gdp',trendline='ols',
-                    labels={'gdp':'GDP','life_expectancy':'Life Expectancy','status':'Status'},
-                    title='Correlation between GDP and Life Expectancy'),use_container_width=True)   
-                
-# Visualizing Correlation between GDP and Schooling 
-                st.plotly_chart(px.scatter(region_year_filtered_life,x='gdp',y='schooling',trendline='ols',
-                            title='Correlation between GDP and Schooling', labels={'gdp':'GDP','schooling':'Schooling'}),use_container_width=True)
-            with page2_tab2_col2:   
-
-# Visualizing correlation between GDP and Percentage Expenditure
-                st.plotly_chart(px.scatter(region_year_filtered_life,x='gdp',y='percentage_expenditure',trendline='ols',
-                        labels={'gdp':'GDP','percentage_expenditure':'Percentage Expenditure'},
-                        title='Correlation between GDP and Percentage Expenditure'),use_container_width=True)
-                
-# Visualizing Correlation between GDP and Schooling 
-                st.plotly_chart(px.scatter(region_year_filtered_life,x='gdp',y='income_composition_of_resources',trendline='ols',
-                            title='Correlation between GDP and HDI', labels={'gdp':'GDP','income_composition_of_resources':'HDI'}),use_container_width=True)
+            key_se_factors = ['gdp','schooling','income_composition_of_resources','percentage_expenditure']
+            st.plotly_chart(px.imshow(region_year_filtered_life[key_se_factors].corr().round(2),color_continuous_scale='RdYlGn',text_auto=True,width=800, height=600
+                      ,zmin=-1,zmax=1,title='Correlation between Socioeconomic Factors'),use_container_width=True)
             
             page2_tab2_second_col, =st.columns(1)
             with page2_tab2_second_col:
@@ -171,6 +167,16 @@ elif page =='Correlation Analysis':
                                 title='Average Health Expenditure Percentage from GDP by Development Status')
                 status_exp_percent_pie.update_traces(textinfo='value+label',showlegend=False)
                 st.plotly_chart(status_exp_percent_pie,use_container_width=True)
+
+            page2_tab2_thrd_col1,page2_tab2_thrd_col2=st.columns(2)
+            with page2_tab2_thrd_col1:
+# Visualize GDP and Schooling by Country Status
+                st.plotly_chart(px.scatter(life,x='gdp',y='schooling',color='status',trendline='ols',
+                  title='GDP and Schooling by Country Development Status',labels={'gdp':'GDP','schooling':'Schooling'}),use_container_width=True)
+            with page2_tab2_thrd_col2:
+# Visualize GDP and HDI by Country Status
+                st.plotly_chart(px.scatter(life,x='gdp',y='income_composition_of_resources',color='status',trendline='ols',
+                  title='GDP and HDI by Country Development Status',labels={'gdp':'GDP','income_composition_of_resources':'HDI'}),use_container_width=True)
 
         with page2_tab3:
             page2_tab3_col1,page2_tab3_col2=st.columns(2)
@@ -222,7 +228,7 @@ elif page =='Correlation Analysis':
                 st.plotly_chart(px.scatter(life,x='gdp',y='thinness_10-19_years',color='status',trendline='ols',
                          labels={'gdp':'GDP','thinness_10-19_years':'Thinness(10-19 Years)','status':'Status'},
                         title='GDP and Thinness(10-19 Years) by Country Development Status'),use_container_width=True)
-            st.divider()
+        with page2_tab5:   
             st.subheader('Conclusion')
             st.markdown("""
 *   We can conclude from the previous analysis that GDP is the key influncer that affects Life Expectancy.
@@ -397,6 +403,24 @@ elif page == 'Regional Analysis':
 *   After investigation we observed that Japan has highest Global GDP Contribution Percentage and Percentage Expenditure.
 *   Spain has highest Expenditure Percent from GDP but putting in consideration it has relatively low Global GDP Contribution Percentage and Percentage Expenditure than Japan.
 *   All of which justifies that Japan can spend more for healthcare excellence compared to Italy and Spain concluding that it is reasonable to find Japan has the highest Average Life Expectancy in our dataset.                 
+ """)
+# Prepare Recommendation Page       
+elif page == 'Recommendation':
+    st.subheader('Final Recommendations')
+    st.markdown("""
+*   **Education is the Key Factor that Affect Life Expectancy.**
+    In developing countries, money is often spent on nutrition before healthcare. Education helps because it teaches health awareness.
+
+*   **Decrease Prevalence of Diseases with Knowledge.**
+    When people go to school, they learn about hygiene and staying clean. This simple knowledge helps stop dangerous diseases from spreading. When fewer people get sick, the number of deaths (mortality rate) goes down.
+
+*   **The "Success Loop": Education and Money.**
+Education and a country wealth (HDI/Income) work together in a circle:
+
+    Better Education → Better Leaders: Educated people make smarter decisions. They know how to grow the country money and use resources wisely.
+
+    More Money → Better Services: When the country earns more, it can spend more on better schools and better hospitals.
+    
  """)
 
 
