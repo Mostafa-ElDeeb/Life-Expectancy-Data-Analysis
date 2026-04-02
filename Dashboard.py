@@ -77,7 +77,7 @@ if page=='Overview':
                     The target of our analysis is to find key factors that affect life expectancy of an individual 
                     across different regions around the world.""")
         st.subheader('Schooling')
-        st.markdown("""Average number of years of education received by individual """)
+        st.markdown("""Average number of years of education received by individual. """)
         st.subheader('Income Composition of Resources')
         st.markdown("""Human Development Index (HDI).
                     It is a fractional index (scaled from 0 to 1) that measures how effectively a country 
@@ -155,6 +155,7 @@ elif page =='Correlation Analysis':
                                       zmin=-1,zmax=1,title='Correlation with Life Expectancy'),use_container_width=True)
 
         with page2_tab2:
+# Study correlations between socioeconomic factors
             key_se_factors = ['gdp','schooling','income_composition_of_resources','percentage_expenditure']
             st.plotly_chart(px.imshow(region_year_filtered_life[key_se_factors].corr().round(2),color_continuous_scale='RdYlGn',text_auto=True,width=800, height=600
                       ,zmin=-1,zmax=1,title='Correlation between Socioeconomic Factors'),use_container_width=True)
@@ -181,35 +182,18 @@ elif page =='Correlation Analysis':
         with page2_tab3:
             page2_tab3_col1,page2_tab3_col2=st.columns(2)
             with page2_tab3_col1:
-# Visualizing Correlation between Schooling and Diphtheria              
-                st.plotly_chart(px.scatter(region_year_filtered_life,x='schooling',y='diphtheria',trendline='ols',
-                   labels={'schooling':'Schooling','diphtheria':'Diphtheria'},
-                   title='Correlation between Schooling and Diphtheria'),use_container_width=True)
-
-# Visualizing Correlation between Schooling and Adult Mortality
-                st.plotly_chart(px.scatter(region_year_filtered_life,x='schooling',y='adult_mortality',trendline='ols',
-                            labels={'schooling':'Schooling','adult_mortality':'Adult Mortality'},
-                            title='Correlation between Schooling and Adult Mortality'),use_container_width=True)
-                
-# Visualizing Correlation between Diphtheria and Income Composition of Resources
-                st.plotly_chart(px.scatter(region_year_filtered_life,x='income_composition_of_resources',y='diphtheria',trendline='ols',
-                        labels={'income_composition_of_resources':'HDI','diphtheria':'Diphtheria'},
-                         title='Correlation between HDI and Diphtheria'),use_container_width=True)
+# Corrleation between schooling and health factors
+                region_year_filtered_life_num = region_year_filtered_life.select_dtypes('number')
+                schol_health_corr = region_year_filtered_life_num[['hepatitis_b','polio','diphtheria','adult_mortality']].corrwith(
+                    num_clean['schooling']).round(2).sort_values(ascending=False).to_frame()
+                st.plotly_chart(px.imshow(schol_health_corr,color_continuous_scale='RdYlGn',title='Schooling and Health Factors',text_auto=True,zmin=-1,zmax=1))
+            
             with page2_tab3_col2:
-# Visualizing Correlation between schooling and Polio              
-                st.plotly_chart(px.scatter(region_year_filtered_life,x='schooling',y='polio',trendline='ols',
-                   labels={'schooling':'Schooling','polio':'Polio'},
-                   title='Correlation between Schooling and Polio'),use_container_width=True)
-                
-# Visualizing Correlation between Income Composition of Resources and Adult Mortality
-                st.plotly_chart(px.scatter(region_year_filtered_life,x='income_composition_of_resources',y='adult_mortality',trendline='ols',
-                        labels={'income_composition_of_resources':'HDI','adult_mortality':'Adult Mortality'},
-                         title='Correlation between HDI and Adult Mortality'),use_container_width=True)
+# Corrleation between HDI and health factors
+                hdi_health_corr =region_year_filtered_life_num[['hepatitis_b','polio','diphtheria','adult_mortality']].corrwith(
+                    num_clean['income_composition_of_resources']).round(2).sort_values(ascending=False).to_frame()
+                st.plotly_chart(px.imshow(hdi_health_corr,color_continuous_scale='RdYlGn',title='HDI and Health Factors',text_auto=True,zmin=-1,zmax=1))
 
-# Visualizing Correlation between Income Composition of Resources and Polio
-                st.plotly_chart(px.scatter(region_year_filtered_life,x='income_composition_of_resources',y='polio',trendline='ols',
-                        labels={'income_composition_of_resources':'HDI','polio':'Polio'},
-                         title='Correlation between HDI and Polio'),use_container_width=True)
         with page2_tab4:
             page2_tab4_col1, page2_tab4_col2 = st.columns(2)
             with page2_tab4_col1:
@@ -228,6 +212,7 @@ elif page =='Correlation Analysis':
                 st.plotly_chart(px.scatter(life,x='gdp',y='thinness_10-19_years',color='status',trendline='ols',
                          labels={'gdp':'GDP','thinness_10-19_years':'Thinness(10-19 Years)','status':'Status'},
                         title='GDP and Thinness(10-19 Years) by Country Development Status'),use_container_width=True)
+ # Write conclusion page
         with page2_tab5:   
             st.subheader('Conclusion')
             st.markdown("""
@@ -273,6 +258,7 @@ elif page=='Time Series Analysis':
             st.plotly_chart(px.line(adult_mortality_trend,x='year',y='adult_mortality',title='Average Adult Mortality Trend').update_layout(
                     xaxis_title='Year',yaxis_title='Adult Mortality'),use_container_width=True)
             
+ # Write conclusion page
     with page3_tab2:
         st.subheader('Conclusion')
         st.markdown("""
@@ -390,6 +376,8 @@ elif page == 'Regional Analysis':
                                         {'country':'Country','gdp':'GDP','global_gdp_contribution':'Global GDP Contribution (%)',
                                             'percentage_expenditure':'Percentage Expenditure','expenditure_percent_from_gdp':'Expenditure Percent from GDP'})
             st.dataframe(top_three_lifeex_school)
+
+ # Write conclusion page
         st.divider()
         st.subheader('Conclusion')
         st.markdown("""
@@ -408,14 +396,14 @@ elif page == 'Regional Analysis':
 elif page == 'Recommendation':
     st.subheader('Final Recommendations')
     st.markdown("""
-*   **Education is the Key Factor that Affect Life Expectancy.**
-    In developing countries, money is often spent on nutrition before healthcare. Education helps because it teaches health awareness.
+*   **Education is the Key Factor that Affect Life Expectancy,**
+    education helps because it teaches health awareness.
 
-*   **Decrease Prevalence of Diseases with Knowledge.**
-    When people go to school, they learn about hygiene and staying clean. This simple knowledge helps stop dangerous diseases from spreading. When fewer people get sick, the number of deaths (mortality rate) goes down.
+*   **Prevalence of Diseases Decrease with Knowledge,**
+when individual go to school, they learn about hygiene and staying clean. This simple knowledge helps stop dangerous diseases from spreading.
 
-*   **The "Success Loop": Education and Money.**
-Education and a country wealth (HDI/Income) work together in a circle:
+*   **The "Success Loop": Education and Money,**
+education and a country wealth (HDI/Income) work together in a circle:
 
     Better Education → Better Leaders: Educated people make smarter decisions. They know how to grow the country money and use resources wisely.
 
