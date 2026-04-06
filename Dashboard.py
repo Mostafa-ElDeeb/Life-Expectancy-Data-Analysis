@@ -73,7 +73,9 @@ if page=='Overview':
     tab1,tab2=st.tabs(['Introduction','Plots'])
     with tab1:
         st.subheader('Life Expectancy')
-        st.markdown("""Life Expectancy at Birth is the average number of years a person is expected to live. 
+        st.markdown("""Life Expectancy at Birth is the average number of years a person is expected to live.
+                    It is one of the most important indicators of population overall health and well-being, reflecting
+                    the quality of healthcare, living conditions, education and economy.
                     The target of our analysis is to find key factors that affect life expectancy of an individual 
                     across different regions around the world.""")
         st.subheader('Schooling')
@@ -160,24 +162,33 @@ elif page =='Correlation Analysis':
             st.plotly_chart(px.imshow(region_year_filtered_life[key_se_factors].corr().round(2),color_continuous_scale='RdYlGn',text_auto=True,width=800, height=600
                       ,zmin=-1,zmax=1,title='Correlation between Socioeconomic Factors'),use_container_width=True)
             
-            page2_tab2_second_col, =st.columns(1)
+            page2_tab2_second_col, page2_tab2_second_col2 =st.columns(2)
             with page2_tab2_second_col:
 # Display the average health expenditure percentage from GDP for each country status
                 status_exp_percent = year_filtered_life.groupby('status')['expenditure_percent_from_gdp'].mean().round(2).reset_index()
                 status_exp_percent_pie = px.pie(status_exp_percent,names='status',values='expenditure_percent_from_gdp',
-                                title='Average Health Expenditure Percentage from GDP by Development Status')
-                status_exp_percent_pie.update_traces(textinfo='value+label',showlegend=False)
+                                title='Average Health Expenditure Percentage from GDP<br>by Development Status')
+                status_exp_percent_pie.update_traces(texttemplate='%{label}<br>%{value} %<br>(%{percent})',showlegend=False)
                 st.plotly_chart(status_exp_percent_pie,use_container_width=True)
+            with page2_tab2_second_col2:
+# Life expectancy per country development status
+                lifeex_per_status = life.groupby('status')['life_expectancy'].mean().reset_index()
+                st.plotly_chart(px.histogram(lifeex_per_status,x='status',y='life_expectancy',title='Average Life Expectancy per Development Status').update_layout(
+                            xaxis_title='Development Status', yaxis_title='Life Expectancy'),use_container_width=True)
 
             page2_tab2_thrd_col1,page2_tab2_thrd_col2=st.columns(2)
             with page2_tab2_thrd_col1:
-# Visualize GDP and Schooling by Country Status
-                st.plotly_chart(px.scatter(life,x='gdp',y='schooling',color='status',trendline='ols',
-                  title='GDP and Schooling by Country Development Status',labels={'gdp':'GDP','schooling':'Schooling'}),use_container_width=True)
+# Average Schooling per country development status
+                schol_per_status = life.groupby('status')['schooling'].mean().reset_index()
+                st.plotly_chart(px.histogram(schol_per_status,x='status',y='schooling',title='Average Schooling Per Development Status').update_layout(
+                    xaxis_title='Development Status', yaxis_title='Schooling'),use_container_width=True)
+
+ # Average HDI per country development status 
             with page2_tab2_thrd_col2:
-# Visualize GDP and HDI by Country Status
-                st.plotly_chart(px.scatter(life,x='gdp',y='income_composition_of_resources',color='status',trendline='ols',
-                  title='GDP and HDI by Country Development Status',labels={'gdp':'GDP','income_composition_of_resources':'HDI'}),use_container_width=True)
+                hdi_per_status = life.groupby('status')['income_composition_of_resources'].mean().reset_index()
+                st.plotly_chart(px.histogram(hdi_per_status,x='status',y='income_composition_of_resources',title='Average HDI Per Development Status').update_layout(
+                             xaxis_title='Development Status', yaxis_title='HDI'),use_container_width=True)   
+
 
         with page2_tab3:
             page2_tab3_col1,page2_tab3_col2=st.columns(2)
@@ -216,13 +227,12 @@ elif page =='Correlation Analysis':
         with page2_tab5:   
             st.subheader('Conclusion')
             st.markdown("""
-*   We can conclude from the previous analysis that GDP is the key influncer that affects Life Expectancy.
-*   In developed countries about 10% on average from GDP goes to healthcare expenditure, putting in considerations that those countries have higher GDP.
-*   In developing countries larger portion of GDP is spent on food which is suggested to be a priority in those countries, however in those countries a significant positive correlation appears between GDP and both schooling and income composition of resources.
-*   Schooling and Income Composition of Resources strongly correlate with higher Life Expectancy.
-*   So while not spending higher percentage in healthcare expenditure
-developing countries spend more on schooling, income and resources which in turns increase Life Expectancy.
-
+*   Schooling, Income Composition of Resources and Adult Mortality are strongly correlate with Life Expectancy.
+*   GDP is strongly correlated with Healthcare Percentage Expenditure.
+*   In developed countries about 10% on average from GDP goes to healthcare expenditure unlike developing countries which spend 7% , 
+    putting in considerations that developed countries have higher GDP.
+*   There is obvious correlation between Polio/Diphtheria vaccinations and Life Expectancy in developing countries unlike developed ones. 
+*   In developing countries larger portion of GDP is spent on food which is suggested to be a priority in those countries.
 """)    
 # Prepare third page in dashboard
 elif page=='Time Series Analysis':
@@ -237,10 +247,10 @@ elif page=='Time Series Analysis':
 
     with page3_tab1_col1:
 # Visualizing average GDP trend
-            gdp_per_year = region_filtered_life.groupby(['year','status'])['gdp'].mean().sort_index().reset_index()
-            st.plotly_chart(px.line(gdp_per_year,x='year',y='gdp',
-            labels={'gdp':'GDP','year':'Year'},
-                    title='Average GDP trend by Year'),use_container_width=True)
+            gdp_per_year = region_filtered_life.groupby('year')['bmi'].mean().sort_index().reset_index()
+            st.plotly_chart(px.line(gdp_per_year,x='year',y='bmi',
+            labels={'gdp':'GDP','bmi':'BMI'},
+                    title='Average BMI trend by Year'),use_container_width=True)
             
 # Visualizing average schooling trend
             schooling_trend = region_filtered_life.groupby('year')['schooling'].mean().sort_index().reset_index()
@@ -263,12 +273,8 @@ elif page=='Time Series Analysis':
         st.subheader('Conclusion')
         st.markdown("""
 *   Life Expectancy increased over time.
-*   There is a rising trend in both Schooling and Income Composition of Resources while a downward trend is observed in Adult Mortality.
+*   There is a rising trend in BMI/Schooling and Income Composition of Resources while a downward trend is observed in Adult Mortality.
 *   These factors are strongly correlated to Life Expectancy which led to its increase.
-*   GDP shows slight increase over time however increase in Schooling and Income Composition of Resources appears to be significant.
-*   This suggests that GDP is not only the factor that affect Schooling and Income Composition of Resources other factors can do, such as money that comes from abroad (Remittances, Foreign Investment, Foreign Aid, External Loans).
-*   This reveals that sources of money other than GDP are as important as GDP in increasing Life Expectancy.
-
  """)
 # Prepare fourth page in dashboard
 elif page == 'Regional Analysis':
@@ -291,39 +297,40 @@ elif page == 'Regional Analysis':
             hdi_per_cont=year_filtered_life.groupby('continent')['income_composition_of_resources'].mean().sort_values().reset_index().round(2)
             st.plotly_chart(px.histogram(hdi_per_cont,y='continent',x='income_composition_of_resources',text_auto=True,title='Average HDI by Continent').update_layout(
                          xaxis_title='HDI',yaxis_title='Continent'),use_container_width=True)
-      
+# Top 10 countries by life expectancy
+            country_per_lifeex =region_year_filtered_life.groupby(['country','status'])['life_expectancy'].mean().sort_values(ascending=False).reset_index()
+            st.plotly_chart(px.histogram(country_per_lifeex.head(10),x='country',y='life_expectancy',color='status',title='Top 10 Countries by Life Expectancy',color_discrete_map={'Developed': 'green', 'Developing': 'red'}).update_layout(
+                            xaxis_title='Country',yaxis_title='Life Expectancy',legend_title='Status'),use_container_width=True)
+# Visualizing average thinness in 10-19 year by continent
+            thin1019_per_cont = year_filtered_life.groupby('continent')['thinness_10-19_years'].mean().sort_values().reset_index().round(2)
+            st.plotly_chart(px.histogram(thin1019_per_cont,y='continent',x='thinness_10-19_years',text_auto=True,title='Average Thinness (10-19 Years) by Continent').update_layout(
+                xaxis_title='Thinness (10-19 Years)',yaxis_title='Continent'),use_container_width=True)
+                
         with page4_tab1_col2:
 # Visualizing average schooling by continent
             school_per_cont = year_filtered_life.groupby('continent')['schooling'].mean().sort_values().reset_index().round(2)
             st.plotly_chart(px.histogram(school_per_cont,y='continent',x='schooling',text_auto=True,title='Average Schooling by Continent').update_layout(
                             xaxis_title='Schooling',yaxis_title='Continent'),use_container_width=True)
-            
-# Top 10 countries by life expectancy
-            country_per_lifeex =region_year_filtered_life.groupby(['country','status'])['life_expectancy'].mean().sort_values(ascending=False).reset_index()
-            st.plotly_chart(px.histogram(country_per_lifeex.head(10),x='country',y='life_expectancy',color='status',title='Top 10 Countries by Life Expectancy',color_discrete_map={'Developed': 'green', 'Developing': 'red'}).update_layout(
-                            xaxis_title='Country',yaxis_title='Life Expectancy',legend_title='Status'),use_container_width=True)
-        page4_tab1_second_col,=st.columns(1)
-        with page4_tab1_second_col:
+# Visualizing average adult mortality by continent
+            bmi_per_cont = year_filtered_life.groupby('continent')['adult_mortality'].mean().round(2).sort_values().reset_index()
+            st.plotly_chart(px.histogram(bmi_per_cont,x='adult_mortality', y='continent',text_auto=True ,title='Average Adult Mortality by Continent').update_layout(
+                xaxis_title='Continent', yaxis_title='Adult Mortality'),use_container_width=True)        
 # Bottom 10 countries by life expectancy
             st.plotly_chart(px.histogram(country_per_lifeex.tail(10).iloc[::-1],x='country',y='life_expectancy',color='status',title='Bottom 10 Countries by Life Expectancy',color_discrete_map={'Developed': 'green', 'Developing': 'red'}).update_layout(
                         xaxis_title='Country',yaxis_title='Life Expectancy',legend_title='Status'),use_container_width=True)
-    
-    with page4_tab2:
-        page4_tab2_col1,page4_tab2_col2 = st.columns(2)
-        with page4_tab2_col1:
-# Visualizing average thinness in 10-19 year by continent
-            thin1019_per_cont = year_filtered_life.groupby('continent')['thinness_10-19_years'].mean().sort_values().reset_index().round(2)
-            st.plotly_chart(px.histogram(thin1019_per_cont,y='continent',x='thinness_10-19_years',text_auto=True,title='Average Thinness (10-19 Years) by Continent').update_layout(
-                xaxis_title='Thinness (10-19 Years)',yaxis_title='Continent'),use_container_width=True)
-        with page4_tab2_col2:
+            
 # Visualizing average thinness in 5-9 year by continent
             thin59_per_cont=year_filtered_life.groupby('continent')['thinness_5-9_years'].mean().sort_values().reset_index().round(2)
             st.plotly_chart(px.histogram(thin59_per_cont,y='continent',x='thinness_5-9_years',text_auto=True,title='Average Thinness (5-9 Years) by Continent').update_layout(
                 xaxis_title='Thinness (5-9 Years)',yaxis_title='Continent'),use_container_width=True)
-        st.divider()
+
+
+
+
+    with page4_tab2:
         st.subheader('Observation')
         st.markdown("""
-*    Japan has highest Life Expectancy however, it is in Asia which comes directly after Africa that has the lowest Life Expectancy.
+*    Japan has highest Life Expectancy; however, it is in Asia which comes directly after Africa that has the lowest Life Expectancy.
 *    Something needs more investigation, we are going to focus on key drivers for Life Expectancy (Schooling, HDI, Adult Mortality). """)
         st.divider()
 # Investigating Japan aganist other countries to study the reason of its highest life expectancy
@@ -382,33 +389,27 @@ elif page == 'Regional Analysis':
         st.subheader('Conclusion')
         st.markdown("""
 *   Highest Life Expectancy appears in Europe while Lowest appear in Africa.
-*   Europe has significant high GDP compared to other continents followed by Asia however, Asia appear to have low Life Expectancy following Africa.
-*   Prevalence of thinness in Asia with low schooling and HDI justifies why Life Expectancy is low regardless relatively high GDP.
-*   Count of countries in Asia in our dataset is relatively high compared to other continents (excluding Africa) and it includes 3 developed countries, something which we must put in consideration that justifies the relatively high GDP.
+*   Europe has the highest average Schooling, HDI, and lowest Adult Mortality rates. In addition, it has the highest count of developed countries, all of which justify its high average Life Expectancy.
+*   While Africa has the highest count of countries -none of them are developed- it has the lowest average schooling and HDI, and the highest adult mortality rates, all of which justify its low average Life Expectancy.
+*   Average Life Expectancy in Asia appears to be the lowest among the remaining continents; however, it has the highest count of developed countries among them. This can be justified by the prevalence of thinness in the region.
 *   Japan has the highest life expectancy in the dataset showing consistent uptrend in Life Expectancy unlike other top 10 countries.
 *   After further investigation top 10 countries shows similar trends in HDI and Adult Mortality.
 *   Japan shows consistent uptrend in Schooling and same observed in Italy and Spain.
 *   After investigation we observed that Japan has highest Global GDP Contribution Percentage and Percentage Expenditure.
 *   Spain has highest Expenditure Percent from GDP but putting in consideration it has relatively low Global GDP Contribution Percentage and Percentage Expenditure than Japan.
+*   While GDP and percentage expenditure serve as moderate influencers of life expectancy, they allow Japan to dominate over other countries.
 *   All of which justifies that Japan can spend more for healthcare excellence compared to Italy and Spain concluding that it is reasonable to find Japan has the highest Average Life Expectancy in our dataset.                 
  """)
 # Prepare Recommendation Page       
 elif page == 'Recommendation':
     st.subheader('Final Recommendations')
     st.markdown("""
-*   **Education is the Key Factor that Affect Life Expectancy,**
-    education helps because it teaches health awareness.
-
-*   **Prevalence of Diseases Decrease with Knowledge,**
-when individual go to school, they learn about hygiene and staying clean. This simple knowledge helps stop dangerous diseases from spreading.
-
-*   **The "Success Loop": Education and Money,**
-education and a country wealth (HDI/Income) work together in a circle:
-
-    Better Education → Better Leaders: Educated people make smarter decisions. They know how to grow the country money and use resources wisely.
-
-    More Money → Better Services: When the country earns more, it can spend more on better schools and better hospitals.
-    
+The strong association between schooling and the Human Development Index (HDI), 
+along with their combined influence on life expectancy, highlights education as 
+a key driver of population outcomes. Effective educational strategies 
+contribute to aware and more skilled population capable of allocating resources efficiently, 
+which in turn supports the development of stronger education systems, 
+creating a cycle of sustained socio-economic improvement.
  """)
 
 
