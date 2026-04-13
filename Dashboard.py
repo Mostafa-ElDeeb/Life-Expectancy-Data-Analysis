@@ -14,7 +14,7 @@ life = pd.read_csv('life_expectancy_cleaned1.csv')
 # Set page navigator
 with st.sidebar:
     st.header('Pages',text_alignment='center')
-    page = st.radio('Select a Page',['Overview','Correlation Analysis','Time Series Analysis','Regional Analysis','Recommendation'])
+    page = st.radio('Select a Page',['Overview','Correlation Analysis','Time Series Analysis','Regional Analysis','Recommendations'])
 
 # Set filters
 # Set filter header and subheader
@@ -78,8 +78,9 @@ if page=='Overview':
                     the quality of healthcare, living conditions, education and economy.
                     The target of our analysis is to find key factors that affect life expectancy of an individual 
                     across different regions around the world.""")
+        st.divider()
         st.subheader('Schooling')
-        st.markdown("""Average number of years of education received by individual. """)
+        st.markdown("""Average number of years of education received by individual.""")
         st.subheader('Income Composition of Resources')
         st.markdown("""Human Development Index (HDI).
                     It is a fractional index (scaled from 0 to 1) that measures how effectively a country 
@@ -87,7 +88,9 @@ if page=='Overview':
         st.subheader('GDP')
         st.markdown("""Gross Domestic Product. 
                     represents the total monetary of all the finished goods and services produced 
-                    within a country's borders in a specific time period. """)
+                    within a country's borders in a specific time period.""")
+        st.subheader('Adult Mortality')
+        st.markdown("""Probability of dying between 15 and 60 years of age per 1000 population.""")
         
     with tab2:
 # Design page layout
@@ -107,32 +110,46 @@ if page=='Overview':
         second_col1,second_col2=st.columns(2)
 # Visualize life expectancy trend
         with second_col1:
-            life_ex_trend = life.groupby(['year'])['life_expectancy'].mean().sort_index().reset_index()
-            st.plotly_chart(px.line(life_ex_trend,x='year',y='life_expectancy',labels={'year':'Year','life_expectancy':'Life Expectancy'},
-                    title='Average Life Expectancy Trend by Year'),use_container_width=True)
+            with st.container(border=True):
+                life_ex_trend = life.groupby(['year'])['life_expectancy'].mean().sort_index().reset_index()
+                st.plotly_chart(px.line(life_ex_trend,x='year',y='life_expectancy',labels={'year':'Year','life_expectancy':'Life Expectancy'},
+                        title='Average Life Expectancy Trend by Year'),use_container_width=True)
 
 # GDP contribution by country status from total GDP
-            gdp_per_status = life.groupby('status')['gdp'].sum().sort_values(ascending=False).reset_index().round(2)
-            gdp_per_status_pie = px.pie(gdp_per_status,names='status',values='gdp',hole=0.5,title='Contribution to Total GDP: Developed vs. Developing Nations')
-            gdp_per_status_pie.update_traces(textinfo='percent+label',showlegend=False)
-            st.plotly_chart(gdp_per_status_pie,use_container_width=True)
+            with st.container(border=True):
+                gdp_per_status = life.groupby('status')['gdp'].sum().sort_values(ascending=False).reset_index().round(2)
+                gdp_per_status_pie = px.pie(gdp_per_status,names='status',values='gdp',hole=0.5,height=531,title='Contribution to Total GDP:<br>Developed vs. Developing Nations')
+                gdp_per_status_pie.update_traces(textinfo='percent+label',showlegend=False)
+                st.plotly_chart(gdp_per_status_pie,use_container_width=True)
+
+                st.divider()
+                st.markdown('Developed countries account for 52.6% of the total GDP in the dataset, while developing nations represent the remaining 47.4%.')
         with second_col2:
 # Display percentage of developed vs developing countries
-            status_percent =px.pie(life.groupby('status')['country'].nunique().reset_index(), names='status', values='country',title='Distribution of Countries by Economic Development Status')
-            status_percent.update_traces(textinfo='percent+label', textposition='inside', showlegend=False)
-            st.plotly_chart(status_percent,use_container_width=True)
+            with st.container(border=True):
+                status_percent =px.pie(life.groupby('status')['country'].nunique().reset_index(), names='status', values='country',title='Distribution of Countries by Economic<br>Development Status')
+                status_percent.update_traces(textinfo='percent+label', textposition='inside', showlegend=False)
+                st.plotly_chart(status_percent,use_container_width=True)
+                
+                st.divider()
+                st.markdown('82.2% of countries are developing while 17.8% are developed',text_alignment='center')
 
 # Visualizing Average GDP by Continent
-            continent_gdp = life.groupby('continent')['gdp'].mean().sort_values(ascending=False).reset_index()
-            st.plotly_chart(px.histogram(continent_gdp,x='continent',y='gdp',
-                        title='Average GDP by Continent').update_layout(yaxis_title='GDP',xaxis_title='Continent'),use_container_width=True)
+            with st.container(border=True):
+                continent_gdp = life.groupby('continent')['gdp'].mean().sort_values(ascending=False).reset_index()
+                st.plotly_chart(px.histogram(continent_gdp,x='continent',y='gdp',
+                            title='Average GDP by Continent').update_layout(yaxis_title='GDP',xaxis_title='Continent'),use_container_width=True)
+                
+                st.divider()
+                st.markdown('Highest average GDP appears in Europe while lowest appears in Africa.')
 
         thrd_col1,=st.columns(1)
         with thrd_col1:
 # Visualizing country count per continent
-            country_count_per_cont = life.groupby(['continent','status'])['country'].nunique().reset_index().sort_values(by='country',ascending=False)
-            st.plotly_chart(px.histogram(country_count_per_cont,x='continent',y='country',color='status', text_auto=True,barmode='group',
-                        title='Country Count Per Continent').update_layout(xaxis_title='Continent',yaxis_title='Country'),use_container_width=True)
+            with st.container(border=True):
+                country_count_per_cont = life.groupby(['continent','status'])['country'].nunique().reset_index().sort_values(by='country',ascending=False)
+                st.plotly_chart(px.histogram(country_count_per_cont,x='continent',y='country',color='status', text_auto=True,barmode='group',
+                                title='Country Count Per Continent').update_layout(xaxis_title='Continent',yaxis_title='Country'),use_container_width=True)
 
 # Prepare second page in the dashboard
 elif page =='Correlation Analysis':
@@ -144,23 +161,31 @@ elif page =='Correlation Analysis':
     with page2_tab1:
         page2_tab1_col1,=st.columns(1)
         with page2_tab1_col1:
-# Studying correlation between different factors in our dataset (Moderate to Strong correlations)
-            num_clean= life.select_dtypes(include='number')
-            corr_matrix = num_clean.corr()
-            strong_corr = corr_matrix[((corr_matrix>0.5) & (corr_matrix<1)) | ((corr_matrix<-0.5) & (corr_matrix>-1))]
-            st.plotly_chart(px.imshow(strong_corr.round(2), text_auto=True,width=1000, height=800,color_continuous_scale='RdYlGn',
-                                      zmin=-1,zmax=1,title='Moderate to Strong Correlated Factors'),use_container_width=True)
-
 # Studying factors affecting our target column (Life Expectancy)
+            num_clean= life.select_dtypes(include='number')
             life_exp_corr = num_clean['life_expectancy']
             st.plotly_chart(px.imshow(num_clean.corrwith(life_exp_corr).sort_values(ascending=False).to_frame().round(2) , text_auto=True, width=1000, height=800,color_continuous_scale='RdYlGn', 
-                                      zmin=-1,zmax=1,title='Correlation with Life Expectancy'),use_container_width=True)
+                                    zmin=-1,zmax=1,title='Correlation with Life Expectancy'),use_container_width=True)
+            st.divider()
+            st.markdown("""
+                        The top three factors positively correlated with Life Expectancy are Schooling, 
+                        Income Composition of Resources, and BMI. Conversely, the top three factors negatively 
+                        correlated with Life Expectancy are Adult Mortality, HIV/AIDS, and Thinnes.
+                        """)
+                                
 
         with page2_tab2:
 # Study correlations between socioeconomic factors
             key_se_factors = ['gdp','schooling','income_composition_of_resources','percentage_expenditure']
-            st.plotly_chart(px.imshow(region_year_filtered_life[key_se_factors].corr().round(2),color_continuous_scale='RdYlGn',text_auto=True,width=800, height=600
-                      ,zmin=-1,zmax=1,title='Correlation between Socioeconomic Factors'),use_container_width=True)
+            with st.container(border=True):
+                st.plotly_chart(px.imshow(region_year_filtered_life[key_se_factors].corr().round(2),color_continuous_scale='RdYlGn',text_auto=True,width=800, height=600
+                        ,zmin=-1,zmax=1,title='Correlation between Socioeconomic Factors'),use_container_width=True)
+                
+                st.divider()
+                st.markdown("""
+                            *   Schooling and Income Composition of Resources are strongly correlated with each other.
+                            *   GDP is strongly correlated with Healthcare expenditure percentage.
+                            """)
             
             page2_tab2_second_col, page2_tab2_second_col2 =st.columns(2)
             with page2_tab2_second_col:
@@ -169,40 +194,58 @@ elif page =='Correlation Analysis':
                 status_exp_percent_pie = px.pie(status_exp_percent,names='status',values='expenditure_percent_from_gdp',
                                 title='Average Health Expenditure Percentage from GDP<br>by Development Status')
                 status_exp_percent_pie.update_traces(texttemplate='%{label}<br>%{value} %<br>(%{percent})',showlegend=False)
-                st.plotly_chart(status_exp_percent_pie,use_container_width=True)
+
+                with st.container(border=True):
+                    st.plotly_chart(status_exp_percent_pie,use_container_width=True)
+                    st.divider()
+                    st.markdown("""In developed countries about 10% on average from GDP goes to healthcare expenditure unlike developing countries which spend 7%. """)
             with page2_tab2_second_col2:
 # Life expectancy per country development status
                 lifeex_per_status = life.groupby('status')['life_expectancy'].mean().reset_index()
-                st.plotly_chart(px.histogram(lifeex_per_status,x='status',y='life_expectancy',title='Average Life Expectancy per Development Status').update_layout(
+                with st.container(border=True):
+                    st.plotly_chart(px.histogram(lifeex_per_status,x='status',y='life_expectancy',height=476,title='Average Life Expectancy per Development Status').update_layout(
                             xaxis_title='Development Status', yaxis_title='Life Expectancy'),use_container_width=True)
+                    st.divider()
+                    st.markdown("""The Average Life Expectancy in developed countries is greater than that of developing countries. """)
 
             page2_tab2_thrd_col1,page2_tab2_thrd_col2=st.columns(2)
             with page2_tab2_thrd_col1:
 # Average Schooling per country development status
                 schol_per_status = life.groupby('status')['schooling'].mean().reset_index()
-                st.plotly_chart(px.histogram(schol_per_status,x='status',y='schooling',title='Average Schooling Per Development Status').update_layout(
+                with st.container(border=True):
+                    st.plotly_chart(px.histogram(schol_per_status,x='status',y='schooling',title='Average Schooling Per Development Status').update_layout(
                     xaxis_title='Development Status', yaxis_title='Schooling'),use_container_width=True)
+
+                    st.divider()
+                    st.markdown("""The Average Schooling in developed countries is greater than that of developing countries.""")
 
  # Average HDI per country development status 
             with page2_tab2_thrd_col2:
                 hdi_per_status = life.groupby('status')['income_composition_of_resources'].mean().reset_index()
-                st.plotly_chart(px.histogram(hdi_per_status,x='status',y='income_composition_of_resources',title='Average HDI Per Development Status').update_layout(
-                             xaxis_title='Development Status', yaxis_title='HDI'),use_container_width=True)   
+                with st.container(border=True):
+                    st.plotly_chart(px.histogram(hdi_per_status,x='status',y='income_composition_of_resources',title='Average HDI Per Development Status').update_layout(
+                             xaxis_title='Development Status', yaxis_title='HDI'),use_container_width=True)  
+                    st.divider()
+                    st.markdown("""The Average Income Composition of Resources in developed countries is greater than that of developing countries. """) 
 
 
         with page2_tab3:
+# Corrleation between life expectancy and health factors            
+            region_year_filtered_life_num = region_year_filtered_life.select_dtypes('number')
+            soc_life_corr= region_year_filtered_life_num[['hepatitis_b','polio','diphtheria','hiv/aids','adult_mortality']].corrwith(region_year_filtered_life_num['life_expectancy']).round(2).sort_values(ascending=False).to_frame()
+            st.plotly_chart(px.imshow(soc_life_corr,color_continuous_scale='RdYlGn',title='Life Expectancy and Health Factors',text_auto=True,zmin=-1,zmax=1))
+            
             page2_tab3_col1,page2_tab3_col2=st.columns(2)
             with page2_tab3_col1:
 # Corrleation between schooling and health factors
-                region_year_filtered_life_num = region_year_filtered_life.select_dtypes('number')
-                schol_health_corr = region_year_filtered_life_num[['hepatitis_b','polio','diphtheria','adult_mortality']].corrwith(
-                    num_clean['schooling']).round(2).sort_values(ascending=False).to_frame()
+                schol_health_corr = region_year_filtered_life_num[['hepatitis_b','polio','diphtheria','hiv/aids','adult_mortality']].corrwith(
+                    region_year_filtered_life_num['schooling']).round(2).sort_values(ascending=False).to_frame()
                 st.plotly_chart(px.imshow(schol_health_corr,color_continuous_scale='RdYlGn',title='Schooling and Health Factors',text_auto=True,zmin=-1,zmax=1))
             
             with page2_tab3_col2:
 # Corrleation between HDI and health factors
-                hdi_health_corr =region_year_filtered_life_num[['hepatitis_b','polio','diphtheria','adult_mortality']].corrwith(
-                    num_clean['income_composition_of_resources']).round(2).sort_values(ascending=False).to_frame()
+                hdi_health_corr =region_year_filtered_life_num[['hepatitis_b','polio','diphtheria','hiv/aids','adult_mortality']].corrwith(
+                    region_year_filtered_life_num['income_composition_of_resources']).round(2).sort_values(ascending=False).to_frame()
                 st.plotly_chart(px.imshow(hdi_health_corr,color_continuous_scale='RdYlGn',title='HDI and Health Factors',text_auto=True,zmin=-1,zmax=1))
 
         with page2_tab4:
@@ -401,9 +444,9 @@ elif page == 'Regional Analysis':
 *   All of which justifies that Japan can spend more for healthcare excellence compared to Italy and Spain concluding that it is reasonable to find Japan has the highest Average Life Expectancy in our dataset.                 
  """)
 # Prepare Recommendation Page       
-elif page == 'Recommendation':
-    st.subheader('Final Recommendations')
-    st.markdown("""
+elif page == 'Recommendations':
+    st.subheader('Recommendations')
+    st.success("""
 The strong association between schooling and the Human Development Index (HDI), 
 along with their combined influence on life expectancy, highlights education as 
 a key driver of population outcomes. Effective educational strategies 
