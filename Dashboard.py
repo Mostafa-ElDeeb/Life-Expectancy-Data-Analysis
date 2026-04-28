@@ -117,13 +117,12 @@ if page=='Overview':
 
 # GDP contribution by country status from total GDP
             with st.container(border=True):
-                gdp_per_status = life.groupby('status')['gdp'].sum().sort_values(ascending=False).reset_index().round(2)
-                gdp_per_status_pie = px.pie(gdp_per_status,names='status',values='gdp',hole=0.5,height=531,title='Contribution to Total GDP:<br>Developed vs. Developing Nations')
-                gdp_per_status_pie.update_traces(textinfo='percent+label',showlegend=False)
-                st.plotly_chart(gdp_per_status_pie,use_container_width=True)
+                gdp_per_status = life.groupby('status')['gdp'].mean().round(2).reset_index()
+                st.plotly_chart(px.histogram(gdp_per_status,x='status',y='gdp',height=555,title='Average GDP by Development Status').update_layout(
+                             xaxis_title='Development Status',yaxis_title='GDP'),use_container_width=True)
 
                 st.divider()
-                st.markdown('Developed countries account for 52.6% of the total GDP in the dataset, while developing nations represent the remaining 47.4%.')
+                st.markdown('The GDP of Developed countries is 5 times as large as that of Developing countries.')
         with second_col2:
 # Display percentage of developed vs developing countries
             with st.container(border=True):
@@ -168,15 +167,15 @@ elif page =='Correlation Analysis':
                                     zmin=-1,zmax=1,title='Correlation with Life Expectancy'),use_container_width=True)
             st.divider()
             st.markdown("""
-                        The top three factors positively correlated with Life Expectancy are Schooling, 
-                        Income Composition of Resources, and BMI. Conversely, the top three factors negatively 
+                        The top factors positively correlated with Life Expectancy are Schooling and
+                        Income Composition of Resources. Conversely, the top factors negatively 
                         correlated with Life Expectancy are Adult Mortality, HIV/AIDS, and Thinnes.
                         """)
                                 
 
         with page2_tab2:
 # Study correlations between socioeconomic factors
-            key_se_factors = ['gdp','schooling','income_composition_of_resources','percentage_expenditure']
+            key_se_factors = ['life_expectancy','gdp','schooling','income_composition_of_resources','percentage_expenditure']
             with st.container(border=True):
                 st.plotly_chart(px.imshow(region_year_filtered_life[key_se_factors].corr().round(2),color_continuous_scale='RdYlGn',text_auto=True,width=800, height=600
                         ,zmin=-1,zmax=1,title='Correlation between Socioeconomic Factors'),use_container_width=True)
@@ -230,42 +229,50 @@ elif page =='Correlation Analysis':
 
 
         with page2_tab3:
-# Corrleation between life expectancy and health factors            
-            region_year_filtered_life_num = region_year_filtered_life.select_dtypes('number')
-            soc_life_corr= region_year_filtered_life_num[['hepatitis_b','polio','diphtheria','hiv/aids','adult_mortality']].corrwith(region_year_filtered_life_num['life_expectancy']).round(2).sort_values(ascending=False).to_frame()
-            st.plotly_chart(px.imshow(soc_life_corr,color_continuous_scale='RdYlGn',title='Life Expectancy and Health Factors',text_auto=True,zmin=-1,zmax=1))
-            
             page2_tab3_col1,page2_tab3_col2=st.columns(2)
+          
             with page2_tab3_col1:
-# Corrleation between schooling and health factors
-                schol_health_corr = region_year_filtered_life_num[['hepatitis_b','polio','diphtheria','hiv/aids','adult_mortality']].corrwith(
-                    region_year_filtered_life_num['schooling']).round(2).sort_values(ascending=False).to_frame()
-                st.plotly_chart(px.imshow(schol_health_corr,color_continuous_scale='RdYlGn',title='Schooling and Health Factors',text_auto=True,zmin=-1,zmax=1))
-            
-            with page2_tab3_col2:
-# Corrleation between HDI and health factors
-                hdi_health_corr =region_year_filtered_life_num[['hepatitis_b','polio','diphtheria','hiv/aids','adult_mortality']].corrwith(
-                    region_year_filtered_life_num['income_composition_of_resources']).round(2).sort_values(ascending=False).to_frame()
-                st.plotly_chart(px.imshow(hdi_health_corr,color_continuous_scale='RdYlGn',title='HDI and Health Factors',text_auto=True,zmin=-1,zmax=1))
+# correlation between life expectancy and health factors  
+                with st.container(border=True):
+                    region_year_filtered_life_num = region_year_filtered_life.select_dtypes('number')
+                    soc_life_corr= region_year_filtered_life_num[['hepatitis_b','polio','diphtheria','hiv/aids','adult_mortality']].corrwith(region_year_filtered_life_num['life_expectancy']).round(2).sort_values(ascending=False).to_frame()
+                    st.plotly_chart(px.imshow(soc_life_corr,color_continuous_scale='RdYlGn',title='Correlation between Life Expectancy and Health Factors',text_auto=True,zmin=-1,zmax=1))
+# Polio Vaccination Distribution per Development Status
+                with st.container(border=True):
+                    st.plotly_chart(px.box(life,x='status',y='polio',points='all',title='Polio Vaccination Distribution per Development Status').update_layout(
+                        xaxis_title='Development Status',yaxis_title='Polio Vaccination'),use_container_width=True)
+                    st.divider()
+                    st.markdown("""Polio vaccination rates in Developed countries are consistently high and exhibit a much smaller spread compared to the wide variation seen in Developing ones.""")
 
-        with page2_tab4:
-            page2_tab4_col1, page2_tab4_col2 = st.columns(2)
-            with page2_tab4_col1:
-# Visualizing correlation between GDP and BMI segmented by country status
-                st.plotly_chart(px.scatter(life,x='gdp',y='bmi',color='status',trendline='ols',
-                            labels={'bmi':'BMI','gdp':'GDP','status':'Status'},
-                            title='GDP and BMI by Country Development Status'),use_container_width=True)
-            with page2_tab4_col2:
-# Visualizing correlation between GDP and Thinness(5-9 Years) segmented by country status
-                st.plotly_chart(px.scatter(life,x='gdp',y='thinness_5-9_years',color='status',trendline='ols',
-                            labels={'gdp':'GDP','thinness_5-9_years':'Thinness(5-9 Years)','status':'Status'},
-                            title='GDP and Thinness(5-9 Years) by Country Development Status'),use_container_width=True)
-            page2_tab4_second_col1, = st.columns(1)
-            with page2_tab4_second_col1:
-# Visualizing correlation between GDP and Thinness(10-19 Years) segmented by country status
-                st.plotly_chart(px.scatter(life,x='gdp',y='thinness_10-19_years',color='status',trendline='ols',
-                         labels={'gdp':'GDP','thinness_10-19_years':'Thinness(10-19 Years)','status':'Status'},
-                        title='GDP and Thinness(10-19 Years) by Country Development Status'),use_container_width=True)
+            with page2_tab3_col2:
+# Life Expectancy Distribution per Development Status
+                with st.container(border=True):
+                    st.plotly_chart(px.box(life,x='status',y='life_expectancy',points='all',title='Life Expectancy Distribution per Development Status').update_layout(
+                        xaxis_title='Development Status',yaxis_title='Life Expectancy'),use_container_width=True)
+                    st.divider()
+                    st.markdown("""Life Expectancy in Developed countries is consistently high with minimal variation unlike Developing ones.""")
+# Diphtheria Vaccination Distribution per Development Status
+                with st.container(border=True):
+                    st.plotly_chart(px.box(life,x='status',y='diphtheria',points='all',title='Diphtheria Vaccination Distribution<br>per Development Status').update_layout(
+                        xaxis_title='Development Status',yaxis_title='Diphtheria Vaccination'),use_container_width=True) 
+                    st.divider()
+                    st.markdown("""Diphtheria vaccination rates in Developed countries are consistently high and exhibit a much smaller spread compared to the wide variation seen in Developing ones. """)  
+                     
+           
+
+
+        with page2_tab4:            
+# Visualizing correlation between Life Expectancy and Thinness(5-9 Years) segmented by country status
+            with st.container(border=True):
+                st.plotly_chart(px.scatter(life,x='life_expectancy',y='thinness_5-9_years',color='status',trendline='ols',
+                            labels={'life_expectancy':'Life Expectancy','thinness_5-9_years':'Thinness(5-9 Years)','status':'Status'},
+                            title='Life Expectancy and Thinness(5-9 Years) by Country Development Status'),use_container_width=True)
+                
+# Visualizing correlation between Life and Thinness(10-19 Years) segmented by country status
+            with st.container(border=True):    
+                st.plotly_chart(px.scatter(life,x='life_expectancy',y='thinness_10-19_years',color='status',trendline='ols',
+                            labels={'life_expectancy':'Life Expectancy','thinness_10-19_years':'Thinness(10-19 Years)','status':'Status'},
+                            title='Life Expectancy and Thinness(10-19 Years) by Country Development Status'),use_container_width=True)
  # Write conclusion page
         with page2_tab5:   
             st.subheader('Conclusion')
@@ -274,8 +281,10 @@ elif page =='Correlation Analysis':
 *   GDP is strongly correlated with Healthcare Percentage Expenditure.
 *   In developed countries about 10% on average from GDP goes to healthcare expenditure unlike developing countries which spend 7% , 
     putting in considerations that developed countries have higher GDP.
-*   There is obvious correlation between Polio/Diphtheria vaccinations and Life Expectancy in developing countries unlike developed ones. 
-*   In developing countries larger portion of GDP is spent on food which is suggested to be a priority in those countries.
+*   There is an obvious correlation between Polio/Diphtheria vaccinations and Life Expectancy in developing countries, in contrast to 
+    developed ones, where both vaccination rates and life expectancy are consistently high with minimal variation.
+*   A moderate correlation between Life Expectancy and Thinness is observed in Developed countries; however, this correlation is weak in 
+    Developing countries.
 """)    
 # Prepare third page in dashboard
 elif page=='Time Series Analysis':
@@ -288,35 +297,52 @@ elif page=='Time Series Analysis':
 
         page3_tab1_col1,page3_tab1_col2 = st.columns(2)
 
-    with page3_tab1_col1:
-# Visualizing average GDP trend
-            gdp_per_year = region_filtered_life.groupby('year')['bmi'].mean().sort_index().reset_index()
-            st.plotly_chart(px.line(gdp_per_year,x='year',y='bmi',
-            labels={'gdp':'GDP','bmi':'BMI'},
-                    title='Average BMI trend by Year'),use_container_width=True)
-            
+        with page3_tab1_col1:
+# Visualizing average Thinness 5-9 years trend
+            thin59_per_year = region_filtered_life.groupby('year')['thinness_5-9_years'].mean().sort_index().reset_index()
+            with st.container(border=True):
+                st.plotly_chart(px.line(thin59_per_year,x='year',y='thinness_5-9_years',
+                labels={'year':'Year','thinness_5-9_years':'Thinness 5-9 years'},
+                    title='Average Thinness (5-9 years) trend by Year'),use_container_width=True)
+
 # Visualizing average schooling trend
             schooling_trend = region_filtered_life.groupby('year')['schooling'].mean().sort_index().reset_index()
-            st.plotly_chart(px.line(schooling_trend,x='year',y='schooling',
-                                    title='Average Schooling Trend').update_layout(xaxis_title='Year',yaxis_title='Schooling'),use_container_width=True)
+            with st.container(border=True):
+                st.plotly_chart(px.line(schooling_trend,x='year',y='schooling',
+                                    title='Average Schooling Trend').update_layout(xaxis_title='Year',yaxis_title='Schooling'),use_container_width=True)          
+
+                      
+        with page3_tab1_col2:
+
+# Visualizing average Thinness 10-19 years trend
+            thin1019_per_year = region_filtered_life.groupby('year')['thinness_10-19_years'].mean().sort_index().reset_index()
+            with st.container(border=True):
+                st.plotly_chart(px.line(thin1019_per_year,x='year',y='thinness_10-19_years',
+                labels={'year':'Year','thinness_10-19_years':'Thinness 10-19 years'},
+                    title='Average Thinness (10-19 years) trend by Year'),use_container_width=True)
             
-    with page3_tab1_col2:
 # Visualizing average Income Composition of Resources trend
             income_trend = region_filtered_life.groupby('year')['income_composition_of_resources'].mean().sort_index().reset_index()
-            st.plotly_chart(px.line(income_trend,x='year',y='income_composition_of_resources',title='Average HDI Trend').update_layout(
+            with st.container(border=True):
+                st.plotly_chart(px.line(income_trend,x='year',y='income_composition_of_resources',title='Average HDI Trend').update_layout(
                     xaxis_title='Year',yaxis_title='HDI'),use_container_width=True)
             
+        page3_tab1_sec_col,=st.columns(1)
+        with page3_tab1_sec_col: 
 # Visualizing average adult mortality trend
             adult_mortality_trend = region_filtered_life.groupby('year')['adult_mortality'].mean().sort_index().reset_index()
-            st.plotly_chart(px.line(adult_mortality_trend,x='year',y='adult_mortality',title='Average Adult Mortality Trend').update_layout(
+            with st.container(border=True):
+                st.plotly_chart(px.line(adult_mortality_trend,x='year',y='adult_mortality',title='Average Adult Mortality Trend').update_layout(
                     xaxis_title='Year',yaxis_title='Adult Mortality'),use_container_width=True)
-            
+
+
+                  
  # Write conclusion page
     with page3_tab2:
         st.subheader('Conclusion')
         st.markdown("""
 *   Life Expectancy increased over time.
-*   There is a rising trend in BMI/Schooling and Income Composition of Resources while a downward trend is observed in Adult Mortality.
+*   There is a rising trend in Schooling and Income Composition of Resources while a downward trend is observed in Adult Mortality and Thinness.
 *   These factors are strongly correlated to Life Expectancy which led to its increase.
  """)
 # Prepare fourth page in dashboard
@@ -333,38 +359,46 @@ elif page == 'Regional Analysis':
         with page4_tab1_col1:
 # Visualizing average life expectancy by continent
             life_expectancy_per_continent = year_filtered_life.groupby('continent')['life_expectancy'].mean().round(2).sort_values().reset_index()
-            st.plotly_chart(px.histogram(life_expectancy_per_continent,x='life_expectancy',y='continent',text_auto=True,title='Average Life Expectancy by Continent').update_layout(
+            with st.container(border=True):
+                st.plotly_chart(px.histogram(life_expectancy_per_continent,x='life_expectancy',y='continent',text_auto=True,title='Average Life Expectancy by Continent').update_layout(
                         xaxis_title='Life Expectancy',yaxis_title='Continent'),use_container_width=True)
             
 # Visualizing average income composition of resources by continent
             hdi_per_cont=year_filtered_life.groupby('continent')['income_composition_of_resources'].mean().sort_values().reset_index().round(2)
-            st.plotly_chart(px.histogram(hdi_per_cont,y='continent',x='income_composition_of_resources',text_auto=True,title='Average HDI by Continent').update_layout(
+            with st.container(border=True):
+                st.plotly_chart(px.histogram(hdi_per_cont,y='continent',x='income_composition_of_resources',text_auto=True,title='Average HDI by Continent').update_layout(
                          xaxis_title='HDI',yaxis_title='Continent'),use_container_width=True)
 # Top 10 countries by life expectancy
             country_per_lifeex =region_year_filtered_life.groupby(['country','status'])['life_expectancy'].mean().sort_values(ascending=False).reset_index()
-            st.plotly_chart(px.histogram(country_per_lifeex.head(10),x='country',y='life_expectancy',color='status',title='Top 10 Countries by Life Expectancy',color_discrete_map={'Developed': 'green', 'Developing': 'red'}).update_layout(
+            with st.container(border=True):
+                st.plotly_chart(px.histogram(country_per_lifeex.head(10),x='country',y='life_expectancy',color='status',title='Top 10 Countries by Life Expectancy',color_discrete_map={'Developed': 'green', 'Developing': 'red'}).update_layout(
                             xaxis_title='Country',yaxis_title='Life Expectancy',legend_title='Status'),use_container_width=True)
 # Visualizing average thinness in 10-19 year by continent
             thin1019_per_cont = year_filtered_life.groupby('continent')['thinness_10-19_years'].mean().sort_values().reset_index().round(2)
-            st.plotly_chart(px.histogram(thin1019_per_cont,y='continent',x='thinness_10-19_years',text_auto=True,title='Average Thinness (10-19 Years) by Continent').update_layout(
+            with st.container(border=True):
+                st.plotly_chart(px.histogram(thin1019_per_cont,y='continent',x='thinness_10-19_years',text_auto=True,title='Average Thinness (10-19 Years) by Continent').update_layout(
                 xaxis_title='Thinness (10-19 Years)',yaxis_title='Continent'),use_container_width=True)
                 
         with page4_tab1_col2:
 # Visualizing average schooling by continent
             school_per_cont = year_filtered_life.groupby('continent')['schooling'].mean().sort_values().reset_index().round(2)
-            st.plotly_chart(px.histogram(school_per_cont,y='continent',x='schooling',text_auto=True,title='Average Schooling by Continent').update_layout(
+            with st.container(border=True):
+                st.plotly_chart(px.histogram(school_per_cont,y='continent',x='schooling',text_auto=True,title='Average Schooling by Continent').update_layout(
                             xaxis_title='Schooling',yaxis_title='Continent'),use_container_width=True)
 # Visualizing average adult mortality by continent
-            bmi_per_cont = year_filtered_life.groupby('continent')['adult_mortality'].mean().round(2).sort_values().reset_index()
-            st.plotly_chart(px.histogram(bmi_per_cont,x='adult_mortality', y='continent',text_auto=True ,title='Average Adult Mortality by Continent').update_layout(
+            adult_mortality_per_cont = year_filtered_life.groupby('continent')['adult_mortality'].mean().round(2).sort_values().reset_index()
+            with st.container(border=True):  
+                st.plotly_chart(px.histogram(adult_mortality_per_cont,x='adult_mortality', y='continent',text_auto=True ,title='Average Adult Mortality by Continent').update_layout(
                 xaxis_title='Continent', yaxis_title='Adult Mortality'),use_container_width=True)        
 # Bottom 10 countries by life expectancy
-            st.plotly_chart(px.histogram(country_per_lifeex.tail(10).iloc[::-1],x='country',y='life_expectancy',color='status',title='Bottom 10 Countries by Life Expectancy',color_discrete_map={'Developed': 'green', 'Developing': 'red'}).update_layout(
+            with st.container(border=True):
+                st.plotly_chart(px.histogram(country_per_lifeex.tail(10).iloc[::-1],x='country',y='life_expectancy',color='status',title='Bottom 10 Countries by Life Expectancy',color_discrete_map={'Developed': 'green', 'Developing': 'red'}).update_layout(
                         xaxis_title='Country',yaxis_title='Life Expectancy',legend_title='Status'),use_container_width=True)
             
 # Visualizing average thinness in 5-9 year by continent
             thin59_per_cont=year_filtered_life.groupby('continent')['thinness_5-9_years'].mean().sort_values().reset_index().round(2)
-            st.plotly_chart(px.histogram(thin59_per_cont,y='continent',x='thinness_5-9_years',text_auto=True,title='Average Thinness (5-9 Years) by Continent').update_layout(
+            with st.container(border=True):
+                st.plotly_chart(px.histogram(thin59_per_cont,y='continent',x='thinness_5-9_years',text_auto=True,title='Average Thinness (5-9 Years) by Continent').update_layout(
                 xaxis_title='Thinness (5-9 Years)',yaxis_title='Continent'),use_container_width=True)
 
 
@@ -447,12 +481,10 @@ elif page == 'Regional Analysis':
 elif page == 'Recommendations':
     st.subheader('Recommendations')
     st.success("""
-The strong association between schooling and the Human Development Index (HDI), 
-along with their combined influence on life expectancy, highlights education as 
-a key driver of population outcomes. Effective educational strategies 
-contribute to aware and more skilled population capable of allocating resources efficiently, 
-which in turn supports the development of stronger education systems, 
-creating a cycle of sustained socio-economic improvement.
+The strong association between schooling and the Human Development Index (HDI), along
+with their influence on life expectancy, highlights HDI as a primary driver of population outcomes. 
+Improvements in HDI reflect more effective resource allocation and stronger social systems, 
+which in turn support educational advancement and contribute to a sustained cycle of socio-economic development.
  """)
 
 
