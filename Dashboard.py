@@ -82,9 +82,9 @@ if page=='Overview':
         st.subheader('Schooling')
         st.markdown("""Average number of years of education received by individual.""")
         st.subheader('Income Composition of Resources')
-        st.markdown("""Human Development Index (HDI).
-                    It is a fractional index (scaled from 0 to 1) that measures how effectively a country 
-                    transforms its national income into human development resources.""")
+        st.markdown("""Human Development Index (HDI) in terms of income composition of resources (index ranging from 0 to 1),
+                    that measures how effectively a country’s economic resources contribute to overall human 
+                    development and quality of life.""")
         st.subheader('GDP')
         st.markdown("""Gross Domestic Product. 
                     represents the total monetary of all the finished goods and services produced 
@@ -212,18 +212,18 @@ elif page =='Correlation Analysis':
 # Average Schooling per country development status
                 schol_per_status = life.groupby('status')['schooling'].mean().reset_index()
                 with st.container(border=True):
-                    st.plotly_chart(px.histogram(schol_per_status,x='status',y='schooling',title='Average Schooling Per Development Status').update_layout(
+                    st.plotly_chart(px.histogram(schol_per_status,x='status',y='schooling',title='Average Schooling per Development Status').update_layout(
                     xaxis_title='Development Status', yaxis_title='Schooling'),use_container_width=True)
 
                     st.divider()
                     st.markdown("""The Average Schooling in developed countries is greater than that of developing countries.""")
 
- # Average HDI per country development status 
+ # Average Income Composition of Resources per country development status 
             with page2_tab2_thrd_col2:
                 hdi_per_status = life.groupby('status')['income_composition_of_resources'].mean().reset_index()
                 with st.container(border=True):
-                    st.plotly_chart(px.histogram(hdi_per_status,x='status',y='income_composition_of_resources',title='Average HDI Per Development Status').update_layout(
-                             xaxis_title='Development Status', yaxis_title='HDI'),use_container_width=True)  
+                    st.plotly_chart(px.histogram(hdi_per_status,x='status',y='income_composition_of_resources',title='Average Income Composition of Resources<br>per Development Status').update_layout(
+                             xaxis_title='Development Status', yaxis_title='Income Composition of Resources'),use_container_width=True)  
                     st.divider()
                     st.markdown("""The Average Income Composition of Resources in developed countries is greater than that of developing countries. """) 
 
@@ -266,13 +266,13 @@ elif page =='Correlation Analysis':
             with st.container(border=True):
                 st.plotly_chart(px.scatter(life,x='life_expectancy',y='thinness_5-9_years',color='status',trendline='ols',
                             labels={'life_expectancy':'Life Expectancy','thinness_5-9_years':'Thinness(5-9 Years)','status':'Status'},
-                            title='Life Expectancy and Thinness(5-9 Years) by Country Development Status'),use_container_width=True)
+                            title='Correlation between Life Expectancy and Thinness(5-9 Years) by Country Development Status'),use_container_width=True)
                 
 # Visualizing correlation between Life and Thinness(10-19 Years) segmented by country status
             with st.container(border=True):    
                 st.plotly_chart(px.scatter(life,x='life_expectancy',y='thinness_10-19_years',color='status',trendline='ols',
                             labels={'life_expectancy':'Life Expectancy','thinness_10-19_years':'Thinness(10-19 Years)','status':'Status'},
-                            title='Life Expectancy and Thinness(10-19 Years) by Country Development Status'),use_container_width=True)
+                            title='Correlation between Life Expectancy and Thinness(10-19 Years) by Country Development Status'),use_container_width=True)
  # Write conclusion page
         with page2_tab5:   
             st.subheader('Conclusion')
@@ -303,7 +303,7 @@ elif page=='Time Series Analysis':
             with st.container(border=True):
                 st.plotly_chart(px.line(thin59_per_year,x='year',y='thinness_5-9_years',
                 labels={'year':'Year','thinness_5-9_years':'Thinness 5-9 years'},
-                    title='Average Thinness (5-9 years) trend by Year'),use_container_width=True)
+                    title='Average Thinness (5-9 years) Trend'),use_container_width=True)
 
 # Visualizing average schooling trend
             schooling_trend = region_filtered_life.groupby('year')['schooling'].mean().sort_index().reset_index()
@@ -319,13 +319,13 @@ elif page=='Time Series Analysis':
             with st.container(border=True):
                 st.plotly_chart(px.line(thin1019_per_year,x='year',y='thinness_10-19_years',
                 labels={'year':'Year','thinness_10-19_years':'Thinness 10-19 years'},
-                    title='Average Thinness (10-19 years) trend by Year'),use_container_width=True)
+                    title='Average Thinness (10-19 years) Trend'),use_container_width=True)
             
 # Visualizing average Income Composition of Resources trend
             income_trend = region_filtered_life.groupby('year')['income_composition_of_resources'].mean().sort_index().reset_index()
             with st.container(border=True):
-                st.plotly_chart(px.line(income_trend,x='year',y='income_composition_of_resources',title='Average HDI Trend').update_layout(
-                    xaxis_title='Year',yaxis_title='HDI'),use_container_width=True)
+                st.plotly_chart(px.line(income_trend,x='year',y='income_composition_of_resources',title='Average Income Composition of Resources Trend').update_layout(
+                    xaxis_title='Year',yaxis_title='Income Composition of Resources'),use_container_width=True)
             
         page3_tab1_sec_col,=st.columns(1)
         with page3_tab1_sec_col: 
@@ -366,8 +366,8 @@ elif page == 'Regional Analysis':
 # Visualizing average income composition of resources by continent
             hdi_per_cont=year_filtered_life.groupby('continent')['income_composition_of_resources'].mean().sort_values().reset_index().round(2)
             with st.container(border=True):
-                st.plotly_chart(px.histogram(hdi_per_cont,y='continent',x='income_composition_of_resources',text_auto=True,title='Average HDI by Continent').update_layout(
-                         xaxis_title='HDI',yaxis_title='Continent'),use_container_width=True)
+                st.plotly_chart(px.histogram(hdi_per_cont,y='continent',x='income_composition_of_resources',text_auto=True,title='Average Income Composition of Resources by Continent').update_layout(
+                         xaxis_title='Income Composition of Resources',yaxis_title='Continent'),use_container_width=True)
 # Top 10 countries by life expectancy
             country_per_lifeex =region_year_filtered_life.groupby(['country','status'])['life_expectancy'].mean().sort_values(ascending=False).reset_index()
             with st.container(border=True):
@@ -408,7 +408,7 @@ elif page == 'Regional Analysis':
         st.subheader('Observation')
         st.markdown("""
 *    Japan has highest Life Expectancy; however, it is in Asia which comes directly after Africa that has the lowest Life Expectancy.
-*    Something needs more investigation, we are going to focus on key drivers for Life Expectancy (Schooling, HDI, Adult Mortality). """)
+*    Something needs more investigation, we are going to focus on key drivers for Life Expectancy (Schooling, Income Composition of Resources, Adult Mortality). """)
         st.divider()
 # Investigating Japan aganist other countries to study the reason of its highest life expectancy
         page4_tab2_second_col1, page4_tab2_second_col2=st.columns(2)
@@ -424,8 +424,8 @@ elif page == 'Regional Analysis':
                 st.info('Select One Country')
             else:
                 country_df = life[life['country'] == country]
-                st.plotly_chart(px.line(country_df,x='year',y='income_composition_of_resources',labels={'year':'Year','income_composition_of_resources':'HDI'},
-                        title=f'HDI Trend in {country}'),use_container_width=True)
+                st.plotly_chart(px.line(country_df,x='year',y='income_composition_of_resources',labels={'year':'Year','income_composition_of_resources':'Income Composition of Resources'},
+                        title=f'Income Composition of Resources Trend in {country}'),use_container_width=True)
                 
         with page4_tab2_second_col2:
             if country == 'All':
@@ -466,11 +466,11 @@ elif page == 'Regional Analysis':
         st.subheader('Conclusion')
         st.markdown("""
 *   Highest Life Expectancy appears in Europe while Lowest appear in Africa.
-*   Europe has the highest average Schooling, HDI, and lowest Adult Mortality rates. In addition, it has the highest count of developed countries, all of which justify its high average Life Expectancy.
-*   While Africa has the highest count of countries -none of them are developed- it has the lowest average schooling and HDI, and the highest adult mortality rates, all of which justify its low average Life Expectancy.
+*   Europe has the highest average Schooling, Income Composition of Resources, and lowest Adult Mortality rates. In addition, it has the highest count of developed countries, all of which justify its high average Life Expectancy.
+*   While Africa has the highest count of countries -none of them are developed- it has the lowest average schooling and Income Composition of Resources, and the highest adult mortality rates, all of which justify its low average Life Expectancy.
 *   Average Life Expectancy in Asia appears to be the lowest among the remaining continents; however, it has the highest count of developed countries among them. This can be justified by the prevalence of thinness in the region.
 *   Japan has the highest life expectancy in the dataset showing consistent uptrend in Life Expectancy unlike other top 10 countries.
-*   After further investigation top 10 countries shows similar trends in HDI and Adult Mortality.
+*   After further investigation top 10 countries shows similar trends in Income Composition of Resources and Adult Mortality.
 *   Japan shows consistent uptrend in Schooling and same observed in Italy and Spain.
 *   After investigation we observed that Japan has highest Global GDP Contribution Percentage and Percentage Expenditure.
 *   Spain has highest Expenditure Percent from GDP but putting in consideration it has relatively low Global GDP Contribution Percentage and Percentage Expenditure than Japan.
@@ -481,10 +481,10 @@ elif page == 'Regional Analysis':
 elif page == 'Recommendations':
     st.subheader('Recommendations')
     st.success("""
-The strong association between schooling and the Human Development Index (HDI), along
-with their influence on life expectancy, highlights HDI as a primary driver of population outcomes. 
-Improvements in HDI reflect more effective resource allocation and stronger social systems, 
-which in turn support educational advancement and contribute to a sustained cycle of socio-economic development.
+The strong relationship between schooling and income composition of resources suggests 
+that socio-economic development plays a critical role in improving life expectancy. 
+Investments in education and effective resource allocation can strengthen social systems 
+and support sustainable population well-being.
  """)
 
 
